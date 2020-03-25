@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">smart-agriculture-deloitte</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="menu_home">Main Page</string>
+    <string name="menu_gallery">Notifications</string>
+    <string name="menu_slideshow">Alerts</string>
+    <string name="menu_tools">Stock Management</string>
+    <string name="menu_share">Share Report</string>
+    <string name="menu_send">Settings</string>
+    
+    <string-array name="field_data_names">
+        <item>Air Quality</item>
+        <item>Soil pH</item>
+        <item>Soil Moisture</item>
+        <item>Temperature</item>
+        <item>Humidity</item>
+        <item>Prediction Models</item>
+    </string-array>
+    
+</resources>
