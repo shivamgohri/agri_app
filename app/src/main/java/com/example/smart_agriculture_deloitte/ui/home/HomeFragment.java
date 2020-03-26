@@ -15,8 +15,8 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.example.smart_agriculture_deloitte.MainActivity;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
@@ -35,7 +35,7 @@ import java.util.ArrayList;
 
 import static com.example.smart_agriculture_deloitte.R.array.field_data_names;
 
-public class HomeFragment extends Fragment  {
+public class HomeFragment extends Fragment {
 
 
 
@@ -51,6 +51,7 @@ public class HomeFragment extends Fragment  {
 
     public Spinner spinner;
     TextView data;
+
 
 
 
@@ -75,6 +76,7 @@ public class HomeFragment extends Fragment  {
 
         spinner = root.findViewById(R.id.spinner);
         data = root.findViewById(R.id.data);
+
 
         rootReference = FirebaseDatabase.getInstance();
         reference = rootReference.getReference();
@@ -110,7 +112,7 @@ public class HomeFragment extends Fragment  {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 String selectedItemText = (String) parentView.getItemAtPosition(position);
-                data.setText(selectedItemText);
+
             }
 
             @Override
@@ -126,7 +128,6 @@ public class HomeFragment extends Fragment  {
 
         return root;
     }
-
 
 
 
