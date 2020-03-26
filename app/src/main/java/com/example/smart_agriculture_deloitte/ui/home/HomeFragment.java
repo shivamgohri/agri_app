@@ -133,6 +133,15 @@ public class HomeFragment extends Fragment {
                 else if(selectedItemText.equals("Humidity")){
                     getHumidityData();
                 }
+                else if(selectedItemText.equals("Soil Moisture")){
+                    getSoilMoistureData();
+                }
+                else if(selectedItemText.equals("Soil pH")){
+                    getSoilphData();
+                }
+                else if(selectedItemText.equals("Temperature")){
+                    getTemperatureData();
+                }
 
 
             }
@@ -148,6 +157,135 @@ public class HomeFragment extends Fragment {
 
         return root;
     }
+
+
+
+    public void getSoilMoistureData(){
+
+        Query query = soilMoistureReference.limitToLast(6);
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                soil_moisture_data.removeAll(soil_moisture_data);
+
+                int i=0;
+                for(DataSnapshot snapshot:dataSnapshot.getChildren()){
+                    Float temp = snapshot.getValue(Float.class);
+                    soil_moisture_data.add( new BarEntry(temp, i) );
+                    i++;
+                }
+
+                if(date_time_data.size()==0){
+                    Toast.makeText(getActivity(), "Error loading data, Check Internet Connection!", Toast.LENGTH_LONG).show();
+                }
+                else{
+
+                    BarDataSet bardataset = new BarDataSet(soil_moisture_data, "Soil Moisture Index");
+                    barChart.animateY(5000);
+                    BarData data = new BarData(date_time_data, bardataset);
+                    bardataset.setColors(ColorTemplate.COLORFUL_COLORS);
+                    barChart.setData(data);
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(getActivity(), "Error loading data, Check Internet Connection!", Toast.LENGTH_LONG).show();
+            }
+        });
+
+    }
+
+
+
+
+
+
+    public void getTemperatureData(){
+
+        Query query = soilMoistureReference.limitToLast(6);
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                temperature_data.removeAll(temperature_data);
+
+                int i=0;
+                for(DataSnapshot snapshot:dataSnapshot.getChildren()){
+                    Float temp = snapshot.getValue(Float.class);
+                    temperature_data.add( new BarEntry(temp, i) );
+                    i++;
+                }
+
+                if(date_time_data.size()==0){
+                    Toast.makeText(getActivity(), "Error loading data, Check Internet Connection!", Toast.LENGTH_LONG).show();
+                }
+                else{
+
+                    BarDataSet bardataset = new BarDataSet(temperature_data, "Temperature (degree Celsius)");
+                    barChart.animateY(5000);
+                    BarData data = new BarData(date_time_data, bardataset);
+                    bardataset.setColors(ColorTemplate.COLORFUL_COLORS);
+                    barChart.setData(data);
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(getActivity(), "Error loading data, Check Internet Connection!", Toast.LENGTH_LONG).show();
+            }
+        });
+
+    }
+
+
+
+
+
+
+    public void getSoilphData(){
+
+        Query query = soilphReference.limitToLast(6);
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                soil_ph_data.removeAll(soil_ph_data);
+
+                int i=0;
+                for(DataSnapshot snapshot:dataSnapshot.getChildren()){
+                    Float temp = snapshot.getValue(Float.class);
+                    soil_ph_data.add( new BarEntry(temp, i) );
+                    i++;
+                }
+
+                if(date_time_data.size()==0){
+                    Toast.makeText(getActivity(), "Error loading data, Check Internet Connection!", Toast.LENGTH_LONG).show();
+                }
+                else{
+
+                    BarDataSet bardataset = new BarDataSet(soil_ph_data, "Soil pH Index");
+                    barChart.animateY(5000);
+                    BarData data = new BarData(date_time_data, bardataset);
+                    bardataset.setColors(ColorTemplate.COLORFUL_COLORS);
+                    barChart.setData(data);
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(getActivity(), "Error loading data, Check Internet Connection!", Toast.LENGTH_LONG).show();
+            }
+        });
+
+    }
+
+
+
 
 
 
@@ -188,6 +326,8 @@ public class HomeFragment extends Fragment {
         });
 
     }
+
+
 
 
 
