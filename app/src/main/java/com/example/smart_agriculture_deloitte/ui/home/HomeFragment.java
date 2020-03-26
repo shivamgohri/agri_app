@@ -9,6 +9,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.NonNull;
@@ -51,6 +52,15 @@ public class HomeFragment extends Fragment {
 
     public Spinner spinner;
     TextView data;
+    BarChart barChart;
+
+
+    ArrayList<String> date_time_data = new ArrayList<String>();
+    ArrayList air_quality_data = new ArrayList();
+    ArrayList humidity_data = new ArrayList();
+    ArrayList soil_moisture_data = new ArrayList();
+    ArrayList soil_ph_data = new ArrayList();
+    ArrayList temperature_data = new ArrayList();
 
 
 
@@ -76,7 +86,7 @@ public class HomeFragment extends Fragment {
 
         spinner = root.findViewById(R.id.spinner);
         data = root.findViewById(R.id.data);
-
+        barChart = root.findViewById(R.id.barchart);
 
         rootReference = FirebaseDatabase.getInstance();
         reference = rootReference.getReference();
@@ -108,10 +118,22 @@ public class HomeFragment extends Fragment {
         spinner.setAdapter(myAdapter);
 
 
+
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 String selectedItemText = (String) parentView.getItemAtPosition(position);
+
+                getDateTimeData();
+
+                //air quality
+                if(selectedItemText.equals("Air Quality")){
+                    getAirQualityData();
+                }
+                else if(selectedItemText.equals("Humidity")){
+                    getHumidityData();
+                }
+
 
             }
 
@@ -124,10 +146,130 @@ public class HomeFragment extends Fragment {
 
 
 
-
-
         return root;
     }
+
+
+
+    public void getHumidityData(){
+
+        Query query = humidityReference.limitToLast(6);
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                humidity_data.removeAll(humidity_data);
+
+                int i=0;
+                for(DataSnapshot snapshot:dataSnapshot.getChildren()){
+                    Float temp = snapshot.getValue(Float.class);
+                    humidity_data.add( new BarEntry(temp, i) );
+                    i++;
+                }
+
+                if(date_time_data.size()==0){
+                    Toast.makeText(getActivity(), "Error loading data, Check Internet Connection!", Toast.LENGTH_LONG).show();
+                }
+                else{
+
+                    BarDataSet bardataset = new BarDataSet(humidity_data, "Humidity Index");
+                    barChart.animateY(5000);
+                    BarData data = new BarData(date_time_data, bardataset);
+                    bardataset.setColors(ColorTemplate.COLORFUL_COLORS);
+                    barChart.setData(data);
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(getActivity(), "Error loading data, Check Internet Connection!", Toast.LENGTH_LONG).show();
+            }
+        });
+
+    }
+
+
+
+
+    public void getAirQualityData(){
+
+        Query query = airQualityReference.limitToLast(6);
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                air_quality_data.removeAll(air_quality_data);
+
+                int i=0;
+                for(DataSnapshot snapshot:dataSnapshot.getChildren()){
+                    Float temp = snapshot.getValue(Float.class);
+                    air_quality_data.add( new BarEntry(temp, i) );
+                    i++;
+                }
+
+                if(date_time_data.size()==0){
+                    Toast.makeText(getActivity(), "Error loading data, Check Internet Connection!", Toast.LENGTH_LONG).show();
+                }
+                else{
+
+                    BarDataSet bardataset = new BarDataSet(air_quality_data, "Air Quality Index");
+                    barChart.animateY(5000);
+                    BarData data = new BarData(date_time_data, bardataset);
+                    bardataset.setColors(ColorTemplate.COLORFUL_COLORS);
+                    barChart.setData(data);
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(getActivity(), "Error loading data, Check Internet Connection!", Toast.LENGTH_LONG).show();
+            }
+        });
+
+    }
+
+
+
+
+
+
+
+    public void getDateTimeData(){
+
+        Query query = dateTimeReference.limitToLast(6);
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                date_time_data.removeAll(date_time_data);
+
+                for(DataSnapshot snapshot:dataSnapshot.getChildren()){
+                    String temp = snapshot.getValue(String.class);
+                    date_time_data.add( temp );
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(getActivity(), "Error loading data, Check Internet Connection!", Toast.LENGTH_LONG).show();
+            }
+        });
+
+    }
+
+
+
+
+
+
+
+
+
+
+
 
 
 
