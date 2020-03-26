@@ -10,7 +10,7 @@ public class SendViewModel extends ViewModel {
 
     public SendViewModel() {
         mText = new MutableLiveData<>();
-        mText.setValue("This is settings page");
+        mText.setValue("SETTINGS");
     }
 
     public LiveData<String> getText() {

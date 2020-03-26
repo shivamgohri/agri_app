@@ -53,6 +53,7 @@ public class HomeFragment extends Fragment {
     public Spinner spinner;
     TextView data;
     BarChart barChart;
+    public static int number_of_data = 6;
 
 
     ArrayList<String> date_time_data = new ArrayList<String>();
@@ -128,19 +129,19 @@ public class HomeFragment extends Fragment {
 
                 //air quality
                 if(selectedItemText.equals("Air Quality")){
-                    getAirQualityData();
+                    getAirQualityData(true);
                 }
                 else if(selectedItemText.equals("Humidity")){
-                    getHumidityData();
+                    getHumidityData(true);
                 }
                 else if(selectedItemText.equals("Soil Moisture")){
-                    getSoilMoistureData();
+                    getSoilMoistureData(true);
                 }
                 else if(selectedItemText.equals("Soil pH")){
-                    getSoilphData();
+                    getSoilphData(true);
                 }
                 else if(selectedItemText.equals("Temperature")){
-                    getTemperatureData();
+                    getTemperatureData(true);
                 }
 
 
@@ -160,9 +161,28 @@ public class HomeFragment extends Fragment {
 
 
 
-    public void getSoilMoistureData(){
 
-        Query query = soilMoistureReference.limitToLast(6);
+
+
+
+
+    public void setBarChart(ArrayList array_name){
+
+        BarDataSet bardataset = new BarDataSet(array_name, "Index");
+        barChart.animateY(5000);
+        BarData data = new BarData(date_time_data, bardataset);
+        bardataset.setColors(ColorTemplate.COLORFUL_COLORS);
+        barChart.setData(data);
+
+    }
+
+
+
+
+
+    public void getSoilMoistureData(final boolean setgraph){
+
+        Query query = soilMoistureReference.limitToLast(number_of_data);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -179,15 +199,11 @@ public class HomeFragment extends Fragment {
                 if(date_time_data.size()==0){
                     Toast.makeText(getActivity(), "Error loading data, Check Internet Connection!", Toast.LENGTH_LONG).show();
                 }
-                else{
-
-                    BarDataSet bardataset = new BarDataSet(soil_moisture_data, "Soil Moisture Index");
-                    barChart.animateY(5000);
-                    BarData data = new BarData(date_time_data, bardataset);
-                    bardataset.setColors(ColorTemplate.COLORFUL_COLORS);
-                    barChart.setData(data);
-
+                else if(setgraph){
+                    setBarChart(soil_moisture_data);
                 }
+
+
             }
 
             @Override
@@ -203,9 +219,9 @@ public class HomeFragment extends Fragment {
 
 
 
-    public void getTemperatureData(){
+    public void getTemperatureData(final boolean setgraph){
 
-        Query query = soilMoistureReference.limitToLast(6);
+        Query query = soilMoistureReference.limitToLast(number_of_data);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -222,15 +238,10 @@ public class HomeFragment extends Fragment {
                 if(date_time_data.size()==0){
                     Toast.makeText(getActivity(), "Error loading data, Check Internet Connection!", Toast.LENGTH_LONG).show();
                 }
-                else{
-
-                    BarDataSet bardataset = new BarDataSet(temperature_data, "Temperature (degree Celsius)");
-                    barChart.animateY(5000);
-                    BarData data = new BarData(date_time_data, bardataset);
-                    bardataset.setColors(ColorTemplate.COLORFUL_COLORS);
-                    barChart.setData(data);
-
+                else if(setgraph){
+                    setBarChart(temperature_data);
                 }
+
             }
 
             @Override
@@ -246,9 +257,9 @@ public class HomeFragment extends Fragment {
 
 
 
-    public void getSoilphData(){
+    public void getSoilphData(final boolean setgraph){
 
-        Query query = soilphReference.limitToLast(6);
+        Query query = soilphReference.limitToLast(number_of_data);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -265,15 +276,10 @@ public class HomeFragment extends Fragment {
                 if(date_time_data.size()==0){
                     Toast.makeText(getActivity(), "Error loading data, Check Internet Connection!", Toast.LENGTH_LONG).show();
                 }
-                else{
-
-                    BarDataSet bardataset = new BarDataSet(soil_ph_data, "Soil pH Index");
-                    barChart.animateY(5000);
-                    BarData data = new BarData(date_time_data, bardataset);
-                    bardataset.setColors(ColorTemplate.COLORFUL_COLORS);
-                    barChart.setData(data);
-
+                else if(setgraph){
+                    setBarChart(soil_ph_data);
                 }
+
             }
 
             @Override
@@ -289,9 +295,9 @@ public class HomeFragment extends Fragment {
 
 
 
-    public void getHumidityData(){
+    public void getHumidityData(final boolean setgraph){
 
-        Query query = humidityReference.limitToLast(6);
+        Query query = humidityReference.limitToLast(number_of_data);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -308,15 +314,10 @@ public class HomeFragment extends Fragment {
                 if(date_time_data.size()==0){
                     Toast.makeText(getActivity(), "Error loading data, Check Internet Connection!", Toast.LENGTH_LONG).show();
                 }
-                else{
-
-                    BarDataSet bardataset = new BarDataSet(humidity_data, "Humidity Index");
-                    barChart.animateY(5000);
-                    BarData data = new BarData(date_time_data, bardataset);
-                    bardataset.setColors(ColorTemplate.COLORFUL_COLORS);
-                    barChart.setData(data);
-
+                else if(setgraph){
+                    setBarChart(humidity_data);
                 }
+
             }
 
             @Override
@@ -332,9 +333,9 @@ public class HomeFragment extends Fragment {
 
 
 
-    public void getAirQualityData(){
+    public void getAirQualityData(final boolean setgraph){
 
-        Query query = airQualityReference.limitToLast(6);
+        Query query = airQualityReference.limitToLast(number_of_data);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -351,15 +352,10 @@ public class HomeFragment extends Fragment {
                 if(date_time_data.size()==0){
                     Toast.makeText(getActivity(), "Error loading data, Check Internet Connection!", Toast.LENGTH_LONG).show();
                 }
-                else{
-
-                    BarDataSet bardataset = new BarDataSet(air_quality_data, "Air Quality Index");
-                    barChart.animateY(5000);
-                    BarData data = new BarData(date_time_data, bardataset);
-                    bardataset.setColors(ColorTemplate.COLORFUL_COLORS);
-                    barChart.setData(data);
-
+                else if(setgraph){
+                    setBarChart(air_quality_data);
                 }
+
             }
 
             @Override
@@ -378,7 +374,7 @@ public class HomeFragment extends Fragment {
 
     public void getDateTimeData(){
 
-        Query query = dateTimeReference.limitToLast(6);
+        Query query = dateTimeReference.limitToLast(number_of_data);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
