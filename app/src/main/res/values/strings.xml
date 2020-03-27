@@ -22,5 +22,12 @@
         <item>Humidity</item>
         <item>Prediction Models</item>
     </string-array>
+
+
+    <string-array name="graph_type">
+        <item>Bar Graph</item>
+        <item>Line Graph</item>
+    </string-array>
+
     
 </resources>

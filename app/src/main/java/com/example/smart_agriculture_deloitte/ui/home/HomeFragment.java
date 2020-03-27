@@ -1,5 +1,6 @@
 package com.example.smart_agriculture_deloitte.ui.home;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,18 +14,31 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.example.smart_agriculture_deloitte.MainActivity;
 import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.AxisBase;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
 import com.example.smart_agriculture_deloitte.R;
+import com.github.mikephil.charting.utils.ViewPortHandler;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -33,6 +47,7 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static com.example.smart_agriculture_deloitte.R.array.field_data_names;
 
@@ -51,9 +66,10 @@ public class HomeFragment extends Fragment {
     DatabaseReference diseaseDetectionReference, weedpestDetectionReference, soilTextureReference, yieldPredictionReference;              //int
 
     public Spinner spinner;
-    TextView data;
-    BarChart barChart;
+    public BarChart barChart;
+    public LineChart lineChart;
     public static int number_of_data = 6;
+    public static boolean graph_type_bar = true;
 
 
     ArrayList<String> date_time_data = new ArrayList<String>();
@@ -62,6 +78,11 @@ public class HomeFragment extends Fragment {
     ArrayList soil_moisture_data = new ArrayList();
     ArrayList soil_ph_data = new ArrayList();
     ArrayList temperature_data = new ArrayList();
+
+    ArrayList disease_detection_data = new ArrayList();
+    ArrayList weedpest_detection_data = new ArrayList();
+    ArrayList soil_texture_data = new ArrayList();
+    ArrayList yield_prediction_data = new ArrayList();
 
 
 
@@ -86,8 +107,9 @@ public class HomeFragment extends Fragment {
 
 
         spinner = root.findViewById(R.id.spinner);
-        data = root.findViewById(R.id.data);
+
         barChart = root.findViewById(R.id.barchart);
+        lineChart = root.findViewById(R.id.lineChart);
 
         rootReference = FirebaseDatabase.getInstance();
         reference = rootReference.getReference();
@@ -112,6 +134,8 @@ public class HomeFragment extends Fragment {
 
 
 
+
+
         ArrayAdapter<String> myAdapter = new ArrayAdapter<String>(this.getActivity(),
                 android.R.layout.simple_list_item_1, getResources().getStringArray(R.array.field_data_names));
 
@@ -129,19 +153,19 @@ public class HomeFragment extends Fragment {
 
                 //air quality
                 if(selectedItemText.equals("Air Quality")){
-                    getAirQualityData(true);
+                    getAirQualityData(graph_type_bar);
                 }
                 else if(selectedItemText.equals("Humidity")){
-                    getHumidityData(true);
+                    getHumidityData(graph_type_bar);
                 }
                 else if(selectedItemText.equals("Soil Moisture")){
-                    getSoilMoistureData(true);
+                    getSoilMoistureData(graph_type_bar);
                 }
                 else if(selectedItemText.equals("Soil pH")){
-                    getSoilphData(true);
+                    getSoilphData(graph_type_bar);
                 }
                 else if(selectedItemText.equals("Temperature")){
-                    getTemperatureData(true);
+                    getTemperatureData(graph_type_bar);
                 }
 
 
@@ -162,6 +186,48 @@ public class HomeFragment extends Fragment {
 
 
 
+    public void refreshData(){
+
+        getDateTimeData();
+        getAirQualityData(false);
+        getHumidityData(false);
+        getSoilMoistureData(false);
+        getSoilphData(false);
+        getTemperatureData(false);
+
+    }
+
+
+ public void setLineChart(ArrayList array_name){
+
+
+        LineDataSet set1 = new LineDataSet(array_name, "Index");
+
+        set1.setFillAlpha(110);
+        set1.setColor(Color.BLACK);
+        set1.setCircleColor(Color.BLACK);
+        set1.setLineWidth(1f);
+        set1.setCircleRadius(3f);
+        set1.setDrawCircleHole(false);
+        set1.setValueTextSize(9f);
+        set1.setDrawFilled(true);
+
+        ArrayList<ILineDataSet> dataSets = new ArrayList<ILineDataSet>();
+        dataSets.add(set1);
+
+        LineData data = new LineData(date_time_data, dataSets);
+
+        lineChart.setData(data);
+        lineChart.invalidate();
+        Legend l = lineChart.getLegend();
+
+        l.setForm(Legend.LegendForm.LINE);
+        lineChart.setVisibility(View.VISIBLE);
+
+    }
+
+
+
 
 
 
@@ -173,8 +239,9 @@ public class HomeFragment extends Fragment {
         BarData data = new BarData(date_time_data, bardataset);
         bardataset.setColors(ColorTemplate.COLORFUL_COLORS);
         barChart.setData(data);
-
+        barChart.setVisibility(View.VISIBLE);
     }
+
 
 
 
@@ -192,7 +259,15 @@ public class HomeFragment extends Fragment {
                 int i=0;
                 for(DataSnapshot snapshot:dataSnapshot.getChildren()){
                     Float temp = snapshot.getValue(Float.class);
-                    soil_moisture_data.add( new BarEntry(temp, i) );
+                    Integer temp1 = snapshot.getValue(Integer.class);
+
+                    if( graph_type_bar ) {
+                        soil_moisture_data.add(new BarEntry( temp, i));
+                    }
+                    else{
+                        soil_moisture_data.add( new Entry( temp1 , i));
+                    }
+
                     i++;
                 }
 
@@ -202,6 +277,10 @@ public class HomeFragment extends Fragment {
                 else if(setgraph){
                     setBarChart(soil_moisture_data);
                 }
+                else{
+                    setLineChart(soil_moisture_data);
+                }
+
 
 
             }
@@ -213,6 +292,9 @@ public class HomeFragment extends Fragment {
         });
 
     }
+
+
+
 
 
 
@@ -231,7 +313,14 @@ public class HomeFragment extends Fragment {
                 int i=0;
                 for(DataSnapshot snapshot:dataSnapshot.getChildren()){
                     Float temp = snapshot.getValue(Float.class);
-                    temperature_data.add( new BarEntry(temp, i) );
+
+                    if( graph_type_bar ) {
+                        temperature_data.add( new BarEntry(temp, i) );
+                    }
+                    else{
+                        temperature_data.add( new Entry(temp, i) );
+                    }
+
                     i++;
                 }
 
@@ -241,6 +330,10 @@ public class HomeFragment extends Fragment {
                 else if(setgraph){
                     setBarChart(temperature_data);
                 }
+                else{
+                    setLineChart(temperature_data);
+                }
+
 
             }
 
@@ -269,7 +362,14 @@ public class HomeFragment extends Fragment {
                 int i=0;
                 for(DataSnapshot snapshot:dataSnapshot.getChildren()){
                     Float temp = snapshot.getValue(Float.class);
-                    soil_ph_data.add( new BarEntry(temp, i) );
+
+                    if( graph_type_bar ) {
+                        soil_ph_data.add( new BarEntry(temp, i) );
+                    }
+                    else{
+                        soil_ph_data.add( new Entry(temp, i) );
+                    }
+
                     i++;
                 }
 
@@ -279,6 +379,10 @@ public class HomeFragment extends Fragment {
                 else if(setgraph){
                     setBarChart(soil_ph_data);
                 }
+                else{
+                    setLineChart(soil_ph_data);
+                }
+
 
             }
 
@@ -307,7 +411,14 @@ public class HomeFragment extends Fragment {
                 int i=0;
                 for(DataSnapshot snapshot:dataSnapshot.getChildren()){
                     Float temp = snapshot.getValue(Float.class);
-                    humidity_data.add( new BarEntry(temp, i) );
+
+                    if( graph_type_bar ) {
+                        humidity_data.add( new BarEntry(temp, i) );
+                    }
+                    else{
+                        humidity_data.add( new Entry(temp, i ));
+                    }
+
                     i++;
                 }
 
@@ -317,6 +428,10 @@ public class HomeFragment extends Fragment {
                 else if(setgraph){
                     setBarChart(humidity_data);
                 }
+                else{
+                    setLineChart(humidity_data);
+                }
+
 
             }
 
@@ -345,7 +460,15 @@ public class HomeFragment extends Fragment {
                 int i=0;
                 for(DataSnapshot snapshot:dataSnapshot.getChildren()){
                     Float temp = snapshot.getValue(Float.class);
-                    air_quality_data.add( new BarEntry(temp, i) );
+                    Integer temp1 = snapshot.getValue(Integer.class);
+
+                    if( graph_type_bar ) {
+                        air_quality_data.add( new BarEntry(temp, i) );
+                    }
+                    else{
+                        air_quality_data.add( new Entry( temp1, i ) );
+                    }
+
                     i++;
                 }
 
@@ -354,6 +477,9 @@ public class HomeFragment extends Fragment {
                 }
                 else if(setgraph){
                     setBarChart(air_quality_data);
+                }
+                else{
+                    setLineChart(air_quality_data);
                 }
 
             }
@@ -381,9 +507,11 @@ public class HomeFragment extends Fragment {
 
                 date_time_data.removeAll(date_time_data);
 
+                int i=0;
                 for(DataSnapshot snapshot:dataSnapshot.getChildren()){
                     String temp = snapshot.getValue(String.class);
-                    date_time_data.add( temp );
+                    date_time_data.add(temp);
+                    i++;
                 }
 
             }
