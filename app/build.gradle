@@ -38,7 +38,6 @@ dependencies {
 
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.0.0'
 
-    implementation 'com.github.lecho:hellocharts-library:1.5.8@aar'
 
 
 }

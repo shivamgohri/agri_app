@@ -22,15 +22,17 @@ import androidx.lifecycle.ViewModelProviders;
 import com.example.smart_agriculture_deloitte.R;
 import com.example.smart_agriculture_deloitte.ui.home.HomeFragment;
 
+
 public class SendFragment extends Fragment {
 
 
     private SendViewModel sendViewModel;
-    private HomeFragment homeFragment;
+
+    HomeFragment homeFragment;
 
     EditText input_number;
     Button input_number_button;
-    Spinner graph_spinner;
+    static Spinner graph_spinner;
 
 
 
@@ -80,6 +82,7 @@ public class SendFragment extends Fragment {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 String selectedItemText = (String) parentView.getItemAtPosition(position);
+
 
                 if( selectedItemText.equals("Bar Graph") ){
                     homeFragment.graph_type_bar = true;
