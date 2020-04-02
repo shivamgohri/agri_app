@@ -51,6 +51,7 @@ public class LogInActivity extends AppCompatActivity {
                 mainActivity.user_login_mail_input = mail_login.getText().toString();
                 mainActivity.user_login_password_input = password_login.getText().toString();
 
+
                 if( (mainActivity.user_login_name_input.isEmpty()) || (mainActivity.user_login_mail_input.isEmpty()) || (mainActivity.user_login_password_input.isEmpty()) ){
                     Toast.makeText(getApplicationContext(), "Fill all credentials!", Toast.LENGTH_LONG).show();
                 }

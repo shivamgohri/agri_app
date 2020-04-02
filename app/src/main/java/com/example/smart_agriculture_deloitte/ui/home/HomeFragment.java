@@ -17,6 +17,8 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
+
+import com.example.smart_agriculture_deloitte.ui.slideshow.SlideshowFragment;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Legend;
@@ -46,6 +48,7 @@ public class HomeFragment extends Fragment {
 
 
     private HomeViewModel homeViewModel;
+    SlideshowFragment slideshowFragment;
 
     FirebaseDatabase rootReference;
     DatabaseReference reference;
@@ -58,8 +61,9 @@ public class HomeFragment extends Fragment {
     public static Spinner spinner;
     public BarChart barChart;
     public LineChart lineChart;
-    public static int number_of_data = 6;
+    public static int number_of_data = 10;
     public static boolean graph_type_bar = true;
+
 
 
     ArrayList<String> date_time_data = new ArrayList<String>();
@@ -73,7 +77,6 @@ public class HomeFragment extends Fragment {
     ArrayList weedpest_detection_data = new ArrayList();
     ArrayList soil_texture_data = new ArrayList();
     ArrayList yield_prediction_data = new ArrayList();
-
 
 
 
@@ -134,6 +137,7 @@ public class HomeFragment extends Fragment {
 
 
 
+
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
@@ -157,6 +161,9 @@ public class HomeFragment extends Fragment {
                 else if(selectedItemText.equals("Temperature")){
                     getTemperatureData(graph_type_bar);
                 }
+                else if(selectedItemText.equals("Prediction Models")){
+                    getPredictionData();
+                }
 
 
             }
@@ -174,18 +181,6 @@ public class HomeFragment extends Fragment {
     }
 
 
-
-
-    public void refreshData(){
-
-        getDateTimeData();
-        getAirQualityData(false);
-        getHumidityData(false);
-        getSoilMoistureData(false);
-        getSoilphData(false);
-        getTemperatureData(false);
-
-    }
 
 
  public void setLineChart(ArrayList array_name){
@@ -225,7 +220,7 @@ public class HomeFragment extends Fragment {
     public void setBarChart(ArrayList array_name){
 
         BarDataSet bardataset = new BarDataSet(array_name, "Index");
-        barChart.animateY(5000);
+        barChart.animateY(3000);
         BarData data = new BarData(date_time_data, bardataset);
         bardataset.setColors(ColorTemplate.COLORFUL_COLORS);
         barChart.setData(data);
@@ -265,9 +260,11 @@ public class HomeFragment extends Fragment {
                     Toast.makeText(getActivity(), "Error loading data, Check Internet Connection!", Toast.LENGTH_LONG).show();
                 }
                 else if(setgraph){
+                    lineChart.setVisibility(View.INVISIBLE);
                     setBarChart(soil_moisture_data);
                 }
                 else{
+                    barChart.setVisibility(View.INVISIBLE);
                     setLineChart(soil_moisture_data);
                 }
 
@@ -293,7 +290,7 @@ public class HomeFragment extends Fragment {
 
     public void getTemperatureData(final boolean setgraph){
 
-        Query query = soilMoistureReference.limitToLast(number_of_data);
+        Query query = temperatureReference.limitToLast(number_of_data);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -318,9 +315,11 @@ public class HomeFragment extends Fragment {
                     Toast.makeText(getActivity(), "Error loading data, Check Internet Connection!", Toast.LENGTH_LONG).show();
                 }
                 else if(setgraph){
+                    lineChart.setVisibility(View.INVISIBLE);
                     setBarChart(temperature_data);
                 }
                 else{
+                    barChart.setVisibility(View.INVISIBLE);
                     setLineChart(temperature_data);
                 }
 
@@ -367,9 +366,11 @@ public class HomeFragment extends Fragment {
                     Toast.makeText(getActivity(), "Error loading data, Check Internet Connection!", Toast.LENGTH_LONG).show();
                 }
                 else if(setgraph){
+                    lineChart.setVisibility(View.INVISIBLE);
                     setBarChart(soil_ph_data);
                 }
                 else{
+                    barChart.setVisibility(View.INVISIBLE);
                     setLineChart(soil_ph_data);
                 }
 
@@ -409,6 +410,7 @@ public class HomeFragment extends Fragment {
                         humidity_data.add( new Entry(temp, i ));
                     }
 
+
                     i++;
                 }
 
@@ -416,9 +418,11 @@ public class HomeFragment extends Fragment {
                     Toast.makeText(getActivity(), "Error loading data, Check Internet Connection!", Toast.LENGTH_LONG).show();
                 }
                 else if(setgraph){
+                    lineChart.setVisibility(View.INVISIBLE);
                     setBarChart(humidity_data);
                 }
                 else{
+                    barChart.setVisibility(View.INVISIBLE);
                     setLineChart(humidity_data);
                 }
 
@@ -466,9 +470,11 @@ public class HomeFragment extends Fragment {
                     Toast.makeText(getActivity(), "Error loading data, Check Internet Connection!", Toast.LENGTH_LONG).show();
                 }
                 else if(setgraph){
+                    lineChart.setVisibility(View.INVISIBLE);
                     setBarChart(air_quality_data);
                 }
                 else{
+                    barChart.setVisibility(View.INVISIBLE);
                     setLineChart(air_quality_data);
                 }
 
@@ -517,8 +523,198 @@ public class HomeFragment extends Fragment {
 
 
 
+    public void getPredictionData(){
 
 
+        barChart.setVisibility(View.INVISIBLE);
+        lineChart.setVisibility(View.VISIBLE);
+
+        Query query = diseaseDetectionReference.limitToLast(number_of_data);
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                disease_detection_data.removeAll(disease_detection_data);
+
+                int i=0;
+                for(DataSnapshot snapshot:dataSnapshot.getChildren()){
+                    Float temp = snapshot.getValue(Float.class);
+                    Integer temp1 = snapshot.getValue(Integer.class);
+
+                    disease_detection_data.add( new Entry( temp1, i ) );
+
+                    i++;
+                }
+
+                if(date_time_data.size()==0){
+                    Toast.makeText(getActivity(), "Error loading data, Check Internet Connection!", Toast.LENGTH_LONG).show();
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(getActivity(), "Error loading data, Check Internet Connection!", Toast.LENGTH_LONG).show();
+            }
+        });
+
+
+
+        Query query1 = weedpestDetectionReference.limitToLast(number_of_data);
+        query1.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                weedpest_detection_data.removeAll(weedpest_detection_data);
+
+                int i=0;
+                for(DataSnapshot snapshot:dataSnapshot.getChildren()){
+                    Float temp = snapshot.getValue(Float.class);
+                    Integer temp1 = snapshot.getValue(Integer.class);
+
+                    weedpest_detection_data.add( new Entry( temp1, i ) );
+
+                    i++;
+                }
+
+                if(date_time_data.size()==0){
+                    Toast.makeText(getActivity(), "Error loading data, Check Internet Connection!", Toast.LENGTH_LONG).show();
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(getActivity(), "Error loading data, Check Internet Connection!", Toast.LENGTH_LONG).show();
+            }
+        });
+
+
+
+        Query query2 = soilTextureReference.limitToLast(number_of_data);
+        query2.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                soil_texture_data.removeAll(soil_texture_data);
+
+                int i=0;
+                for(DataSnapshot snapshot:dataSnapshot.getChildren()){
+                    Float temp = snapshot.getValue(Float.class);
+                    Integer temp1 = snapshot.getValue(Integer.class);
+
+                    soil_texture_data.add( new Entry( temp1, i ) );
+
+                    i++;
+                }
+
+                if(date_time_data.size()==0){
+                    Toast.makeText(getActivity(), "Error loading data, Check Internet Connection!", Toast.LENGTH_LONG).show();
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(getActivity(), "Error loading data, Check Internet Connection!", Toast.LENGTH_LONG).show();
+            }
+        });
+
+
+
+
+        Query query3 = yieldPredictionReference.limitToLast(number_of_data);
+        query3.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                yield_prediction_data.removeAll(yield_prediction_data);
+
+                int i=0;
+                for(DataSnapshot snapshot:dataSnapshot.getChildren()){
+                    Float temp = snapshot.getValue(Float.class);
+                    Integer temp1 = snapshot.getValue(Integer.class);
+
+                    yield_prediction_data.add( new Entry( temp1, i ) );
+
+                    i++;
+                }
+
+                if(date_time_data.size()==0){
+                    Toast.makeText(getActivity(), "Error loading data, Check Internet Connection!", Toast.LENGTH_LONG).show();
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(getActivity(), "Error loading data, Check Internet Connection!", Toast.LENGTH_LONG).show();
+            }
+        });
+
+
+        setPredictionLineChart();
+
+    }
+
+
+
+    public void setPredictionLineChart(){
+
+
+
+        LineDataSet set1 = new LineDataSet(disease_detection_data, "Disease Detection");
+        LineDataSet set2 = new LineDataSet(weedpest_detection_data, "Weed & Pests Detection");
+        LineDataSet set3 = new LineDataSet(soil_texture_data, "Soil Texture");
+        LineDataSet set4 = new LineDataSet(yield_prediction_data, "Yield Prediction");
+
+        set1.setColor(Color.BLACK);
+        set1.setCircleColor(Color.BLACK);
+        set1.setLineWidth(1f);
+        set1.setCircleRadius(3f);
+        set1.setDrawCircleHole(false);
+        set1.setValueTextSize(9f);
+
+        set2.setColor(Color.RED);
+        set2.setCircleColor(Color.RED);
+        set2.setLineWidth(1f);
+        set2.setCircleRadius(3f);
+        set2.setDrawCircleHole(false);
+        set2.setValueTextSize(9f);
+
+        set3.setColor(Color.GREEN);
+        set3.setCircleColor(Color.GREEN);
+        set3.setLineWidth(1f);
+        set3.setCircleRadius(3f);
+        set3.setDrawCircleHole(false);
+        set3.setValueTextSize(9f);
+
+        set4.setColor(Color.BLUE);
+        set4.setCircleColor(Color.BLUE);
+        set4.setLineWidth(1f);
+        set4.setCircleRadius(3f);
+        set4.setDrawCircleHole(false);
+        set4.setValueTextSize(9f);
+
+
+        ArrayList<ILineDataSet> dataSets = new ArrayList<ILineDataSet>();
+        dataSets.add(set1);
+        dataSets.add(set2);
+        dataSets.add(set3);
+        dataSets.add(set4);
+
+        LineData data = new LineData(date_time_data, dataSets);
+
+
+        lineChart.setData(data);
+        lineChart.invalidate();
+        Legend l = lineChart.getLegend();
+
+        l.setForm(Legend.LegendForm.LINE);
+        lineChart.setVisibility(View.VISIBLE);
+
+
+    }
 
 
 

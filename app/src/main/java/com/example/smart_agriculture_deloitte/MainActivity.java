@@ -4,7 +4,6 @@ package com.example.smart_agriculture_deloitte;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.example.smart_agriculture_deloitte.ui.home.HomeFragment;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -25,6 +24,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.view.Menu;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
     public FloatingActionButton fab;
     public TextView user_login_name, user_login_mail;
+    ImageView user_login_photo;
 
 
     @Override
@@ -65,11 +66,18 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupWithNavController(navigationView, navController);
 
 
-        user_login_mail = headerView.findViewById(R.id.user_login_mail);
         user_login_name = headerView.findViewById(R.id.user_login_name);
+        user_login_mail = headerView.findViewById(R.id.user_login_mail);
+        user_login_photo = headerView.findViewById(R.id.user_login_photo);
         setNameMail(user_login_name_input, user_login_mail_input);
 
-
+        user_login_photo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent( getApplicationContext() , UserDetailsActivity.class );
+                startActivity(intent);
+            }
+        });
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override

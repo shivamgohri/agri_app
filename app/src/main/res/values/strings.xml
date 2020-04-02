@@ -12,7 +12,7 @@
     <string name="menu_gallery">Notifications</string>
     <string name="menu_slideshow">Alerts</string>
     <string name="menu_tools">Stock Management</string>
-    <string name="menu_share">Share Report</string>
+    <string name="menu_share">Get Report</string>
     <string name="menu_send">Settings</string>
     
     <string-array name="field_data_names">
