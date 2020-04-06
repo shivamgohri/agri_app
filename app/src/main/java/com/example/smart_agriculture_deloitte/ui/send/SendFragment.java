@@ -92,6 +92,11 @@ public class SendFragment extends Fragment {
             @Override
             public void onClick(View v) {
 
+                if( input_number.getText().toString().equals("") ){
+                    Toast.makeText(getActivity(), "Please Enter A Number!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 int temp = Integer.parseInt( input_number.getText().toString() );
                 if(temp>10){
                     SlideshowFragment.data_number = temp;
@@ -139,6 +144,12 @@ public class SendFragment extends Fragment {
         input_air_number_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                if( input_air_number.getText().toString().equals("") ){
+                    Toast.makeText(getActivity(), "Please Enter A Number!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 SlideshowFragment.threshold_air = Float.parseFloat( input_air_number.getText().toString() );
                 Toast.makeText(getActivity(), "Air Quality threshold set to "+SlideshowFragment.threshold_air+"!", Toast.LENGTH_SHORT).show();
             }
@@ -147,6 +158,12 @@ public class SendFragment extends Fragment {
         input_ph_number_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                if( input_ph_number.getText().toString().equals("") ){
+                    Toast.makeText(getActivity(), "Please Enter A Number!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 SlideshowFragment.threshold_ph = Float.parseFloat( input_ph_number.getText().toString() );
                 Toast.makeText(getActivity(), "Soil pH threshold set to "+SlideshowFragment.threshold_ph+"!", Toast.LENGTH_SHORT).show();
             }
@@ -155,6 +172,12 @@ public class SendFragment extends Fragment {
         input_moisture_number_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                if( input_moisture_number.getText().toString().equals("") ){
+                    Toast.makeText(getActivity(), "Please Enter A Number!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 SlideshowFragment.threshold_moisture = Float.parseFloat( input_moisture_number.getText().toString() );
                 Toast.makeText(getActivity(), "Soil Moisture threshold set to "+SlideshowFragment.threshold_moisture+"!", Toast.LENGTH_SHORT).show();
             }
@@ -163,6 +186,12 @@ public class SendFragment extends Fragment {
         input_temperature_number_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                if( input_temperature_number.getText().toString().equals("") ){
+                    Toast.makeText(getActivity(), "Please Enter A Number!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 SlideshowFragment.threshold_temperature = Float.parseFloat( input_temperature_number.getText().toString() );
                 Toast.makeText(getActivity(), "Temperature threshold set to "+SlideshowFragment.threshold_temperature+"!", Toast.LENGTH_SHORT).show();
             }
@@ -171,6 +200,12 @@ public class SendFragment extends Fragment {
         input_humidity_number_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                if( input_humidity_number.getText().toString().equals("") ){
+                    Toast.makeText(getActivity(), "Please Enter A Number!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 SlideshowFragment.threshold_humidity = Float.parseFloat( input_humidity_number.getText().toString() );
                 Toast.makeText(getActivity(), "Humidity threshold set to "+SlideshowFragment.threshold_humidity+"!", Toast.LENGTH_SHORT).show();
             }

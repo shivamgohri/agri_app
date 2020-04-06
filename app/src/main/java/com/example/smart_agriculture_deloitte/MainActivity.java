@@ -38,18 +38,27 @@ public class MainActivity extends AppCompatActivity {
     public static String user_login_mail_input="Email ID";
     public static String user_login_password_input;
 
-    public FloatingActionButton fab;
+//    public FloatingActionButton fab;
     public TextView user_login_name, user_login_mail;
-    ImageView user_login_photo;
+    public static ImageView user_login_photo_nav;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
+        try
+        {
+            this.getSupportActionBar().hide();
+        }
+        catch (NullPointerException e){}
         setContentView(R.layout.activity_main);
+
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        fab = findViewById(R.id.fab);
+//        fab = findViewById(R.id.fab);
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
@@ -68,10 +77,10 @@ public class MainActivity extends AppCompatActivity {
 
         user_login_name = headerView.findViewById(R.id.user_login_name);
         user_login_mail = headerView.findViewById(R.id.user_login_mail);
-        user_login_photo = headerView.findViewById(R.id.user_login_photo);
+        user_login_photo_nav = headerView.findViewById(R.id.user_login_photo_nav);
         setNameMail(user_login_name_input, user_login_mail_input);
 
-        user_login_photo.setOnClickListener(new View.OnClickListener() {
+        user_login_photo_nav.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent( getApplicationContext() , UserDetailsActivity.class );
@@ -79,14 +88,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                Snackbar.make(view, "Refreshing Data....", Snackbar.LENGTH_LONG).show();
-
-            }
-        });
+//        fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//
+//                Snackbar.make(view, "Refreshing Data....", Snackbar.LENGTH_LONG).show();
+//
+//            }
+//        });
 
 
     }

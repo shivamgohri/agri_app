@@ -1,8 +1,21 @@
 package com.example.smart_agriculture_deloitte.ui.home;
 
 
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,10 +27,18 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.example.smart_agriculture_deloitte.FieldActionActivity;
+import com.example.smart_agriculture_deloitte.LogInActivity;
+import com.example.smart_agriculture_deloitte.UserDetailsActivity;
 import com.example.smart_agriculture_deloitte.ui.slideshow.SlideshowFragment;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.LineChart;
@@ -28,7 +49,9 @@ import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
 import com.example.smart_agriculture_deloitte.R;
@@ -39,16 +62,17 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
+import java.lang.reflect.Method;
+import java.net.InetAddress;
 import java.util.ArrayList;
 
 
 
-public class HomeFragment extends Fragment {
+public class HomeFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener  {
 
 
 
     private HomeViewModel homeViewModel;
-    SlideshowFragment slideshowFragment;
 
     FirebaseDatabase rootReference;
     DatabaseReference reference;
@@ -63,6 +87,9 @@ public class HomeFragment extends Fragment {
     public LineChart lineChart;
     public static int number_of_data = 10;
     public static boolean graph_type_bar = true;
+    String selectedItemText;
+    static TextView bar_status;
+    SwipeRefreshLayout livedatarefresh;
 
 
 
@@ -81,18 +108,19 @@ public class HomeFragment extends Fragment {
 
 
 
+    @SuppressLint("ResourceAsColor")
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         homeViewModel =
                 ViewModelProviders.of(this).get(HomeViewModel.class);
         View root = inflater.inflate(R.layout.fragment_home, container, false);
 
-        final TextView textView = root.findViewById(R.id.text_home);
+
 
         homeViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
-                textView.setText(s);
+
             }
         });
 
@@ -100,6 +128,9 @@ public class HomeFragment extends Fragment {
 
 
         spinner = root.findViewById(R.id.spinner);
+        bar_status = root.findViewById(R.id.bar_status);
+
+        livedatarefresh = root.findViewById(R.id.livedatarefresh);
 
         barChart = root.findViewById(R.id.barchart);
         lineChart = root.findViewById(R.id.lineChart);
@@ -129,6 +160,12 @@ public class HomeFragment extends Fragment {
 
 
 
+        livedatarefresh.setOnRefreshListener((SwipeRefreshLayout.OnRefreshListener) this);
+        livedatarefresh.setColorSchemeColors(
+                (R.color.colorPrimary),
+                (R.color.colorPrimaryDark),
+                (R.color.colorAccent));
+
         ArrayAdapter<String> myAdapter = new ArrayAdapter<String>(this.getActivity(),
                 android.R.layout.simple_list_item_1, getResources().getStringArray(R.array.field_data_names));
 
@@ -138,30 +175,38 @@ public class HomeFragment extends Fragment {
 
 
 
+
+
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
-                String selectedItemText = (String) parentView.getItemAtPosition(position);
+                selectedItemText = (String) parentView.getItemAtPosition(position);
 
                 getDateTimeData();
 
                 //air quality
                 if(selectedItemText.equals("Air Quality")){
+                    checkInternet();
                     getAirQualityData(graph_type_bar);
                 }
                 else if(selectedItemText.equals("Humidity")){
+                    checkInternet();
                     getHumidityData(graph_type_bar);
                 }
                 else if(selectedItemText.equals("Soil Moisture")){
+                    checkInternet();
                     getSoilMoistureData(graph_type_bar);
                 }
                 else if(selectedItemText.equals("Soil pH")){
+                    checkInternet();
                     getSoilphData(graph_type_bar);
                 }
                 else if(selectedItemText.equals("Temperature")){
+                    checkInternet();
                     getTemperatureData(graph_type_bar);
                 }
                 else if(selectedItemText.equals("Prediction Models")){
+                    checkInternet();
                     getPredictionData();
                 }
 
@@ -185,8 +230,9 @@ public class HomeFragment extends Fragment {
 
  public void setLineChart(ArrayList array_name){
 
+        bar_status.setText("");
 
-        LineDataSet set1 = new LineDataSet(array_name, "Index");
+        LineDataSet set1 = new LineDataSet(array_name, selectedItemText+" Index");
 
         set1.setFillAlpha(110);
         set1.setColor(Color.BLACK);
@@ -201,6 +247,18 @@ public class HomeFragment extends Fragment {
         dataSets.add(set1);
 
         LineData data = new LineData(date_time_data, dataSets);
+
+        lineChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
+            @Override
+            public void onValueSelected(Entry e, int dataSetIndex, Highlight h) {
+                bar_status.setText( selectedItemText + " is " + e.getVal() + " at " + date_time_data.get(e.getXIndex()) + "." );
+            }
+
+            @Override
+            public void onNothingSelected() {
+
+            }
+        });
 
         lineChart.setData(data);
         lineChart.invalidate();
@@ -219,10 +277,27 @@ public class HomeFragment extends Fragment {
 
     public void setBarChart(ArrayList array_name){
 
-        BarDataSet bardataset = new BarDataSet(array_name, "Index");
-        barChart.animateY(3000);
+        bar_status.setText("");
+
+        BarDataSet bardataset = new BarDataSet(array_name, selectedItemText+" Index");
+        barChart.animateY(1000);
         BarData data = new BarData(date_time_data, bardataset);
+
         bardataset.setColors(ColorTemplate.COLORFUL_COLORS);
+        barChart.setDrawBarShadow(true);
+
+        barChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
+            @Override
+            public void onValueSelected(Entry e, int dataSetIndex, Highlight h) {
+                bar_status.setText( selectedItemText + " is " + e.getVal() + " at " + date_time_data.get(e.getXIndex()) + "." );
+            }
+
+            @Override
+            public void onNothingSelected() {
+
+            }
+        });
+
         barChart.setData(data);
         barChart.setVisibility(View.VISIBLE);
     }
@@ -244,13 +319,12 @@ public class HomeFragment extends Fragment {
                 int i=0;
                 for(DataSnapshot snapshot:dataSnapshot.getChildren()){
                     Float temp = snapshot.getValue(Float.class);
-                    Integer temp1 = snapshot.getValue(Integer.class);
 
                     if( graph_type_bar ) {
                         soil_moisture_data.add(new BarEntry( temp, i));
                     }
                     else{
-                        soil_moisture_data.add( new Entry( temp1 , i));
+                        soil_moisture_data.add( new Entry( temp , i));
                     }
 
                     i++;
@@ -454,13 +528,12 @@ public class HomeFragment extends Fragment {
                 int i=0;
                 for(DataSnapshot snapshot:dataSnapshot.getChildren()){
                     Float temp = snapshot.getValue(Float.class);
-                    Integer temp1 = snapshot.getValue(Integer.class);
 
                     if( graph_type_bar ) {
                         air_quality_data.add( new BarEntry(temp, i) );
                     }
                     else{
-                        air_quality_data.add( new Entry( temp1, i ) );
+                        air_quality_data.add( new Entry( temp, i ) );
                     }
 
                     i++;
@@ -539,9 +612,8 @@ public class HomeFragment extends Fragment {
                 int i=0;
                 for(DataSnapshot snapshot:dataSnapshot.getChildren()){
                     Float temp = snapshot.getValue(Float.class);
-                    Integer temp1 = snapshot.getValue(Integer.class);
 
-                    disease_detection_data.add( new Entry( temp1, i ) );
+                    disease_detection_data.add( new Entry( temp, i ) );
 
                     i++;
                 }
@@ -570,9 +642,8 @@ public class HomeFragment extends Fragment {
                 int i=0;
                 for(DataSnapshot snapshot:dataSnapshot.getChildren()){
                     Float temp = snapshot.getValue(Float.class);
-                    Integer temp1 = snapshot.getValue(Integer.class);
 
-                    weedpest_detection_data.add( new Entry( temp1, i ) );
+                    weedpest_detection_data.add( new Entry( temp, i ) );
 
                     i++;
                 }
@@ -601,9 +672,8 @@ public class HomeFragment extends Fragment {
                 int i=0;
                 for(DataSnapshot snapshot:dataSnapshot.getChildren()){
                     Float temp = snapshot.getValue(Float.class);
-                    Integer temp1 = snapshot.getValue(Integer.class);
 
-                    soil_texture_data.add( new Entry( temp1, i ) );
+                    soil_texture_data.add( new Entry( temp, i ) );
 
                     i++;
                 }
@@ -633,9 +703,8 @@ public class HomeFragment extends Fragment {
                 int i=0;
                 for(DataSnapshot snapshot:dataSnapshot.getChildren()){
                     Float temp = snapshot.getValue(Float.class);
-                    Integer temp1 = snapshot.getValue(Integer.class);
 
-                    yield_prediction_data.add( new Entry( temp1, i ) );
+                    yield_prediction_data.add( new Entry( temp, i ) );
 
                     i++;
                 }
@@ -705,6 +774,7 @@ public class HomeFragment extends Fragment {
 
         LineData data = new LineData(date_time_data, dataSets);
 
+        lineChart.setDescription("Prediction Models data");
 
         lineChart.setData(data);
         lineChart.invalidate();
@@ -717,8 +787,194 @@ public class HomeFragment extends Fragment {
     }
 
 
+    @Override
+    public void onRefresh() {
 
 
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+                selectedItemText = (String) parentView.getItemAtPosition(position);
+
+                getDateTimeData();
+
+                //air quality
+                if(selectedItemText.equals("Air Quality")){
+                    checkInternet();
+                    getAirQualityData(graph_type_bar);
+                }
+                else if(selectedItemText.equals("Humidity")){
+                    checkInternet();
+                    getHumidityData(graph_type_bar);
+                }
+                else if(selectedItemText.equals("Soil Moisture")){
+                    checkInternet();
+                    getSoilMoistureData(graph_type_bar);
+                }
+                else if(selectedItemText.equals("Soil pH")){
+                    checkInternet();
+                    getSoilphData(graph_type_bar);
+                }
+                else if(selectedItemText.equals("Temperature")){
+                    checkInternet();
+                    getTemperatureData(graph_type_bar);
+                }
+                else if(selectedItemText.equals("Prediction Models")){
+                    checkInternet();
+                    getPredictionData();
+                }
+
+
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parentView) {
+                // your code here
+            }
+
+        });
+
+        livedatarefresh.setRefreshing(false);
+
+    }
+
+
+
+
+    public void addNotification( String title, String body, String shortText ){
+
+
+        NotificationManager mNotificationManager;
+
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getContext().getApplicationContext(), "notify_001");
+        Intent ii = new Intent(getContext().getApplicationContext(), LogInActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(getContext(), 0, ii, 0);
+
+        NotificationCompat.BigTextStyle bigText = new NotificationCompat.BigTextStyle();
+        bigText.bigText( body );
+        bigText.setBigContentTitle( title );
+        bigText.setSummaryText( shortText );
+
+        mBuilder.setContentIntent( pendingIntent );
+        mBuilder.setSmallIcon(R.drawable.ic_alert);
+        mBuilder.setContentTitle( title );
+        mBuilder.setContentText( body );
+        mBuilder.setPriority(Notification.PRIORITY_MAX);
+        mBuilder.setStyle(bigText);
+
+        mNotificationManager =
+                (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+        {
+            String channelId = "notify_001";
+            NotificationChannel channel = new NotificationChannel(
+                    channelId,
+                    title,
+                    NotificationManager.IMPORTANCE_HIGH);
+            mNotificationManager.createNotificationChannel(channel);
+            mBuilder.setChannelId(channelId);
+        }
+
+        mNotificationManager.notify(0, mBuilder.build());
+
+    }
+
+
+
+
+    public boolean isInternetAvailable() {
+        try {
+            InetAddress ipAddr = InetAddress.getByName("google.com");
+            //You can replace it with your name
+            return !ipAddr.equals("");
+
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+
+
+
+    public void checkInternet(){
+
+        boolean temp = isInternetAvailable();
+
+        boolean mobileDataEnabled = false; // Assume disabled
+        ConnectivityManager cm = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        try {
+            Class cmClass = Class.forName(cm.getClass().getName());
+            Method method = cmClass.getDeclaredMethod("getMobileDataEnabled");
+            method.setAccessible(true);
+            mobileDataEnabled = (Boolean)method.invoke(cm);
+        } catch (Exception e) {
+            // TODO do whatever error handling you want here
+        }
+
+        if(temp==true || mobileDataEnabled==true ){
+            spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+                    selectedItemText = (String) parentView.getItemAtPosition(position);
+
+                    getDateTimeData();
+
+                    //air quality
+                    if(selectedItemText.equals("Air Quality")){
+                        getAirQualityData(graph_type_bar);
+                    }
+                    else if(selectedItemText.equals("Humidity")){
+                        getHumidityData(graph_type_bar);
+                    }
+                    else if(selectedItemText.equals("Soil Moisture")){
+                        getSoilMoistureData(graph_type_bar);
+                    }
+                    else if(selectedItemText.equals("Soil pH")){
+                        getSoilphData(graph_type_bar);
+                    }
+                    else if(selectedItemText.equals("Temperature")){
+                        getTemperatureData(graph_type_bar);
+                    }
+                    else if(selectedItemText.equals("Prediction Models")){
+                        getPredictionData();
+                    }
+
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parentView) {
+                    // your code here
+                }
+            });
+        }
+        else{
+            AlertDialog.Builder builder = new AlertDialog.Builder( getActivity() );
+
+            builder.setTitle("Internet is off!");
+            builder.setIcon(R.drawable.ic_alert);
+            builder.setMessage( "You need to turn ON internet to see the data." +"\n"+"\n" + "Go to settings?" );
+
+            builder.setNegativeButton("NO",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            Toast.makeText(getActivity(), "You won't be able to see data.", Toast.LENGTH_LONG).show();
+
+                        }
+                    });
+
+            builder.setPositiveButton("YES",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            startActivityForResult(new Intent(android.provider.Settings.ACTION_SETTINGS), 0);
+                        }
+                    });
+
+            builder.show();
+        }
+
+    }
 
 
 

@@ -52,7 +52,7 @@ public class SlideshowFragment extends Fragment implements SwipeRefreshLayout.On
     SwipeRefreshLayout swipeLayout;
     public static ArrayList<String> alertlist_content = new ArrayList<String>();
     ArrayList<String> date_time_data = new ArrayList<String>();
-    public static int data_number = 10;
+    public static int data_number = 20;
 
     FirebaseDatabase rootReference;
     DatabaseReference reference;
@@ -115,8 +115,14 @@ public class SlideshowFragment extends Fragment implements SwipeRefreshLayout.On
 
 
         swipeLayout = root.findViewById(R.id.swipeLayout);
+
+
+
+
+
+
         swipeLayout.setOnRefreshListener((SwipeRefreshLayout.OnRefreshListener) this);
-        swipeLayout.setColorSchemeColors(R.color.Black,
+        swipeLayout.setColorSchemeColors(
                 (R.color.colorPrimary),
                 (R.color.colorPrimaryDark),
                 (R.color.colorAccent));
@@ -131,7 +137,7 @@ public class SlideshowFragment extends Fragment implements SwipeRefreshLayout.On
         refreshData();
         alert_list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
 
                 AlertDialog.Builder builder = new AlertDialog.Builder( getActivity() );
 
@@ -144,6 +150,7 @@ public class SlideshowFragment extends Fragment implements SwipeRefreshLayout.On
                             public void onClick(DialogInterface dialog, int which) {
 
                                 //log file
+                                addNotification("ACTION DENIED!", alertlist_content.get(position), "Take necessary action");
 
                             }
                         });
@@ -199,7 +206,7 @@ public class SlideshowFragment extends Fragment implements SwipeRefreshLayout.On
         bigText.setSummaryText( shortText );
 
         mBuilder.setContentIntent( pendingIntent );
-        mBuilder.setSmallIcon(R.drawable.ic_notification);
+        mBuilder.setSmallIcon(R.drawable.ic_alert);
         mBuilder.setContentTitle( title );
         mBuilder.setContentText( body );
         mBuilder.setPriority(Notification.PRIORITY_MAX);
@@ -355,7 +362,7 @@ public class SlideshowFragment extends Fragment implements SwipeRefreshLayout.On
                     Float temp = snapshot.getValue(Float.class);
 
                     if(temp > (float)threshold_temperature){
-                        alertlist_content.add( "Temperature (" +temp+ ") greater than " +threshold_air+ " at "+date_time_data.get(i)+ "." );
+                        alertlist_content.add( "Temperature (" +temp+ ") greater than " +threshold_temperature+ " at "+date_time_data.get(i)+ "." );
                     }
 
                     i++;
